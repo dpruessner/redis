@@ -8,6 +8,10 @@ void setGenericCommand(redisClient *c, int nx, robj *key, robj *val, robj *expir
     int retval;
     long seconds = 0; /* initialized to avoid an harmness warning */
 
+    /* Check permissions */
+    if (checkPathOrReply(c, key) == REDIS_ERR)
+      return;
+
     if (expire) {
         if (getLongFromObjectOrReply(c, expire, &seconds, NULL) != REDIS_OK)
             return;
@@ -54,6 +58,10 @@ void setexCommand(redisClient *c) {
 int getGenericCommand(redisClient *c) {
     robj *o;
 
+    if (checkPathOrReply(c, c->argv[1]) == REDIS_ERR) {
+      return REDIS_ERR;
+    }
+
     if ((o = lookupKeyReadOrReply(c,c->argv[1],shared.nullbulk)) == NULL)
         return REDIS_OK;
 
@@ -72,6 +80,11 @@ void getCommand(redisClient *c) {
 
 void getsetCommand(redisClient *c) {
     if (getGenericCommand(c) == REDIS_ERR) return;
+
+    /* Check permissions */
+    if (checkPathOrReply(c, c->argv[2]) == REDIS_ERR)
+      return;
+
     c->argv[2] = tryObjectEncoding(c->argv[2]);
     dbReplace(c->db,c->argv[1],c->argv[2]);
     incrRefCount(c->argv[2]);

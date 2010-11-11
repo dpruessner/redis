@@ -37,6 +37,7 @@ redisClient *createClient(int fd) {
     c->flags = 0;
     c->lastinteraction = time(NULL);
     c->authenticated = 0;
+    c->auth_path = NULL;                    /* No path by default */
     c->replstate = REDIS_REPL_NONE;
     c->reply = listCreate();
     listSetFreeMethod(c->reply,decrRefCount);
@@ -478,6 +479,9 @@ void freeClient(redisClient *c) {
             ln = listFirst(server.slaves);
             freeClient((redisClient*)ln->value);
         }
+    }
+    if (c->auth_path != NULL) {
+      freeStringObject(c->auth_path);
     }
     /* Release memory */
     zfree(c->argv);

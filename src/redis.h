@@ -144,6 +144,12 @@
 #define REDIS_IO_WAIT 32    /* The client is waiting for Virtual Memory I/O */
 #define REDIS_DIRTY_CAS 64  /* Watched keys modified. EXEC will fail. */
 #define REDIS_CLOSE_AFTER_REPLY 128 /* Close after writing entire reply. */
+#define REDIS_CLIENT_CAN_MOD 256    /* Client can modify keys */
+#define REDIS_CLIENT_CAN_SUB 512    /* Client can subscribe */
+#define REDIS_CLIENT_CAN_ROOT 1024  /* Client unrestricted path */
+#define REDIS_CLIENT_CAN_ADMIN 2048 /* Client unrestricted commands */
+
+#define REDIS_CLIENT_CAN_MASK (256|512|1024|2048)
 
 /* Client request types */
 #define REDIS_REQ_INLINE 1
@@ -327,6 +333,8 @@ typedef struct redisClient {
     dict *pubsub_channels;  /* channels a client is interested in (SUBSCRIBE) */
     list *pubsub_patterns;  /* patterns a client is interested in (SUBSCRIBE) */
 
+    robj *auth_path;        /* path key for authentication */
+
     /* Response buffer */
     int bufpos;
     char buf[REDIS_REPLY_CHUNK_BYTES];
@@ -339,7 +347,7 @@ struct saveparam {
 
 struct sharedObjectsStruct {
     robj *crlf, *ok, *err, *emptybulk, *czero, *cone, *cnegone, *pong, *space,
-    *colon, *nullbulk, *nullmultibulk, *queued,
+    *colon, *nullbulk, *nullmultibulk, *queued, *jailerror,
     *emptymultibulk, *wrongtypeerr, *nokeyerr, *syntaxerr, *sameobjecterr,
     *outofrangeerr, *loadingerr, *plus,
     *select0, *select1, *select2, *select3, *select4,

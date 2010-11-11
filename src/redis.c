@@ -692,6 +692,8 @@ void createSharedObjects(void) {
     shared.emptymultibulk = createObject(REDIS_STRING,sdsnew("*0\r\n"));
     shared.pong = createObject(REDIS_STRING,sdsnew("+PONG\r\n"));
     shared.queued = createObject(REDIS_STRING,sdsnew("+QUEUED\r\n"));
+    shared.jailerror = createObject(REDIS_STRING,sdsnew(
+        "-ERR Key outside of permissions\r\n"));
     shared.wrongtypeerr = createObject(REDIS_STRING,sdsnew(
         "-ERR Operation against a key holding the wrong kind of value\r\n"));
     shared.nokeyerr = createObject(REDIS_STRING,sdsnew(
@@ -1068,13 +1070,98 @@ int prepareForShutdown() {
 /*================================== Commands =============================== */
 
 void authCommand(redisClient *c) {
+    size_t totlen;
+    robj* o;
+    robj* ovalue;
+    long long llvalue;
+
     if (!server.requirepass || !strcmp(c->argv[1]->ptr, server.requirepass)) {
       c->authenticated = 1;
+      c->flags |= REDIS_CLIENT_CAN_MASK; /* Same as granting all privileges */
       addReply(c,shared.ok);
     } else {
-      c->authenticated = 0;
-      addReplyError(c,"invalid password");
+      /* Check if there is a key that exists for the
+       * provided dyamic auth token located at: 'auth.<password>' */
+      totlen = sdslen(c->argv[1]->ptr);
+
+      o = createStringObject("auth.", 5);
+
+      o->ptr = sdscatlen(o->ptr, c->argv[1]->ptr, sdslen(c->argv[1]->ptr));
+
+      /* Check if a key exists in the 0 db -- 0 db holds auth data.
+       * Could make it db-dependent, but 'SELECT' command will have to
+       * kick out c->authenticated until new auth is provided.
+      */
+      ovalue = lookupKeyRead(c->db, o);
+      if (ovalue != NULL && !checkType(c,ovalue,REDIS_STRING)) {
+        getLongLongFromObject(ovalue,&llvalue);
+        c->flags |=  (llvalue << 8);        /* User docs should reflect 
+                                             * permissions as {0,1,2,4,8}
+                                             */
+        c->authenticated = 1;
+        c->auth_path = o;
+        addReply(c,shared.ok);
+      } else {
+        c->authenticated = 0;
+        addReplyError(c,"invalid password");
+        freeStringObject(o); 
+      }
     }
+}
+
+/* Returns REDIS_ERR or REDIS_OK */
+int checkPathOrReply(redisClient *c, robj *key) {
+  robj *o_jailKey;
+  robj *o_pathSet;
+
+
+  /* If there is no path, then they are SU */
+  if (c->auth_path == NULL) {
+    return REDIS_OK;
+  }
+
+  /* If the client is not jailed, return success */
+  if (c->flags & REDIS_CLIENT_CAN_ROOT) {
+    return REDIS_OK;
+  }
+
+  /* Key should be a String encoded.... */
+
+  /* Create the set-key string */
+  o_jailKey = createStringObject(
+    sdsnew(c->auth_path->ptr), sdslen(c->auth_path->ptr));
+
+  o_jailKey->ptr = sdscatlen(o_jailKey->ptr, ".prefixes", 9);
+
+  /* Check if the key exists and if it is a set.
+   * If it does not exist, or is not a set, then
+   * the client is jailed to limbo. Everything 
+   * then returns ERR.
+   */
+  o_pathSet = lookupKey(c->db, o_jailKey);
+  if (o_pathSet == NULL || o_pathSet->type != REDIS_SET
+    || o_pathSet->encoding != REDIS_ENCODING_HT) {
+    freeStringObject(o_jailKey);
+    return REDIS_ERR;
+  }
+
+  /* Check each of the members of the set for match on the key */
+  /* Should be a hashtable that allows us to do dict operations */
+  setTypeIterator *si = setTypeInitIterator(o_pathSet);
+  robj *ele = setTypeNext(si);
+  
+  while (ele != NULL) {
+    if (strncasecmp(ele->ptr, key->ptr, sdslen(ele->ptr)) == 0) {
+      freeStringObject(o_jailKey);
+      setTypeReleaseIterator(si);
+      return REDIS_OK;
+    }
+    ele = setTypeNext(si);
+  }
+  setTypeReleaseIterator(si);
+  freeStringObject(o_jailKey);
+  addReply(c, shared.jailerror);
+  return REDIS_ERR;
 }
 
 void pingCommand(redisClient *c) {
