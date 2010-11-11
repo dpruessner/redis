@@ -1079,7 +1079,9 @@ void authCommand(redisClient *c) {
       c->authenticated = 1;
       c->flags |= REDIS_CLIENT_CAN_MASK; /* Same as granting all privileges */
       addReply(c,shared.ok);
-    } else {
+    } 
+#ifdef AUTH_FEATURE
+    else {
       /* Check if there is a key that exists for the
        * provided dyamic auth token located at: 'auth.<password>' */
       totlen = sdslen(c->argv[1]->ptr);
@@ -1093,27 +1095,50 @@ void authCommand(redisClient *c) {
        * kick out c->authenticated until new auth is provided.
       */
       ovalue = lookupKeyRead(c->db, o);
+
+      if (c->auth_path != NULL) {
+        decrRefCount(c->auth_path);
+        c->auth_path = NULL;
+      }
+
       if (ovalue != NULL && !checkType(c,ovalue,REDIS_STRING)) {
         getLongLongFromObject(ovalue,&llvalue);
+        c->flags &= ~REDIS_CLIENT_CAN_MASK; /* Clear out previous flags */
         c->flags |=  (llvalue << 8);        /* User docs should reflect 
                                              * permissions as {0,1,2,4,8}
                                              */
         c->authenticated = 1;
-        c->auth_path = o;
+        c->auth_path = o;                   /* Save the new path obj */
         addReply(c,shared.ok);
       } else {
         c->authenticated = 0;
         addReplyError(c,"invalid password");
-        freeStringObject(o); 
+        decrRefCount(o);                    /* o is not needed       */
       }
     }
+#else
+    addReplyError(c,"invalid password");
+    c->authenticated = 0;
+#endif
+    
+}
+
+#ifdef AUTH_FEATURE
+int authCheckPathOrReply(redisClient *c, robj *key) {
+  if (authCheckPath(c, key) == REDIS_ERR) {
+    addReply(c, shared.jailerror);
+    return REDIS_ERR;
+  }
+  return REDIS_OK;
 }
 
 /* Returns REDIS_ERR or REDIS_OK */
-int checkPathOrReply(redisClient *c, robj *key) {
+int authCheckPath(redisClient *c, robj *key) {
   robj *o_jailKey;
   robj *o_pathSet;
 
+  if (!server.requirepass)
+    return REDIS_OK;
 
   /* If there is no path, then they are SU */
   if (c->auth_path == NULL) {
@@ -1160,9 +1185,25 @@ int checkPathOrReply(redisClient *c, robj *key) {
   }
   setTypeReleaseIterator(si);
   freeStringObject(o_jailKey);
-  addReply(c, shared.jailerror);
   return REDIS_ERR;
 }
+
+int authCheckMod(redisClient *c) {
+  if (!server.requirepass)
+    return REDIS_OK;
+  if (c->flags & REDIS_CLIENT_CAN_MOD)
+    return REDIS_OK;
+  return REDIS_ERR;
+}
+
+int authCheckModOrReply(redisClient *c) {
+  if (authCheckMod(c) == REDIS_ERR) {
+    addReplyError(c,"cannot modify values"); 
+    return REDIS_ERR;
+  }
+  return REDIS_OK;
+} 
+#endif
 
 void pingCommand(redisClient *c) {
     addReply(c,shared.pong);

@@ -8,9 +8,14 @@ void setGenericCommand(redisClient *c, int nx, robj *key, robj *val, robj *expir
     int retval;
     long seconds = 0; /* initialized to avoid an harmness warning */
 
-    /* Check permissions */
-    if (checkPathOrReply(c, key) == REDIS_ERR)
+#ifdef AUTH_FEATURE
+    /* Check mod permissions */
+    if (authCheckModOrReply(c) == REDIS_ERR)
       return;
+    /* Check permissions */
+    if (authCheckPathOrReply(c, key) == REDIS_ERR)
+      return;
+#endif
 
     if (expire) {
         if (getLongFromObjectOrReply(c, expire, &seconds, NULL) != REDIS_OK)
@@ -58,9 +63,11 @@ void setexCommand(redisClient *c) {
 int getGenericCommand(redisClient *c) {
     robj *o;
 
-    if (checkPathOrReply(c, c->argv[1]) == REDIS_ERR) {
+#ifdef AUTH_FEATURE
+    if (authCheckPathOrReply(c, c->argv[1]) == REDIS_ERR) {
       return REDIS_ERR;
     }
+#endif
 
     if ((o = lookupKeyReadOrReply(c,c->argv[1],shared.nullbulk)) == NULL)
         return REDIS_OK;
@@ -81,9 +88,14 @@ void getCommand(redisClient *c) {
 void getsetCommand(redisClient *c) {
     if (getGenericCommand(c) == REDIS_ERR) return;
 
-    /* Check permissions */
-    if (checkPathOrReply(c, c->argv[2]) == REDIS_ERR)
+#ifdef AUTH_FEATURE
+    /* Check mod permissions */
+    if (authCheckModOrReply(c) == REDIS_ERR)
       return;
+    /* Check path permissions */
+    if (authCheckPathOrReply(c, c->argv[2]) == REDIS_ERR)
+      return;
+#endif
 
     c->argv[2] = tryObjectEncoding(c->argv[2]);
     dbReplace(c->db,c->argv[1],c->argv[2]);
@@ -118,6 +130,7 @@ void msetGenericCommand(redisClient *c, int nx) {
         addReplyError(c,"wrong number of arguments for MSET");
         return;
     }
+
     /* Handle the NX flag. The MSETNX semantic is to return zero and don't
      * set nothing at all if at least one already key exists. */
     if (nx) {
@@ -154,6 +167,17 @@ void msetnxCommand(redisClient *c) {
 void incrDecrCommand(redisClient *c, long long incr) {
     long long value;
     robj *o;
+
+#ifdef AUTH_FEATURE
+    /* Check mod permissions */
+    if (authCheckModOrReply(c) == REDIS_ERR)
+      return;
+    /* Check path permissions */
+    if (authCheckPathOrReply(c, c->argv[1]) == REDIS_ERR ||
+        authCheckPathOrReply(c, c->argv[2]) == REDIS_ERR)
+      return;
+#endif    
+
 
     o = lookupKeyWrite(c->db,c->argv[1]);
     if (o != NULL && checkType(c,o,REDIS_STRING)) return;

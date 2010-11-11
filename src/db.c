@@ -198,6 +198,12 @@ void delCommand(redisClient *c) {
 }
 
 void existsCommand(redisClient *c) {
+#ifdef AUTH_FEATURE
+    /* Check key visibility permissions */
+    if (authCheckPathOrReply(c, c->argv[1]) == REDIS_ERR)
+      return;
+#endif
+    
     expireIfNeeded(c->db,c->argv[1]);
     if (dbExists(c->db,c->argv[1])) {
         addReply(c, shared.cone);
@@ -223,6 +229,17 @@ void randomkeyCommand(redisClient *c) {
         addReply(c,shared.nullbulk);
         return;
     }
+#ifdef AUTH_FEATURE
+    /* Check key visibility permissions.
+     * Do not keep iterating to find a visible
+     * key.
+    */
+    if (authCheckPathOrReply(c, key) == REDIS_ERR) {
+      decrRefCount(key);
+      return;
+    }
+#endif    
+
 
     addReplyBulk(c,key);
     decrRefCount(key);
@@ -245,8 +262,15 @@ void keysCommand(redisClient *c) {
         if (allkeys || stringmatchlen(pattern,plen,key,sdslen(key),0)) {
             keyobj = createStringObject(key,sdslen(key));
             if (expireIfNeeded(c->db,keyobj) == 0) {
-                addReplyBulk(c,keyobj);
-                numkeys++;
+#ifdef AUTH_FEATURE
+                /* Make sure it exists in the path */
+                if (authCheckPath(c, keyobj) == REDIS_OK) {
+#endif
+                  addReplyBulk(c,keyobj);
+                  numkeys++;
+#ifdef AUTH_FEATURE
+                }
+#endif
             }
             decrRefCount(keyobj);
         }
@@ -266,6 +290,12 @@ void lastsaveCommand(redisClient *c) {
 void typeCommand(redisClient *c) {
     robj *o;
     char *type;
+
+#ifdef AUTH_FEATURE
+    /* Check permissions */
+    if (authCheckPathOrReply(c, c->argv[1]) == REDIS_ERR)
+      return;
+#endif    
 
     o = lookupKeyRead(c->db,c->argv[1]);
     if (o == NULL) {
@@ -315,6 +345,16 @@ void shutdownCommand(redisClient *c) {
 
 void renameGenericCommand(redisClient *c, int nx) {
     robj *o;
+
+#ifdef AUTH_FEATURE
+    /* Check mod permissions */
+    if (authCheckModOrReply(c) == REDIS_ERR)
+      return;
+    /* Check path permissions */
+    if (authCheckPathOrReply(c, c->argv[1]) == REDIS_ERR ||
+        authCheckPathOrReply(c, c->argv[2]) == REDIS_ERR)
+      return;
+#endif    
 
     /* To use the same key as src and dst is probably an error */
     if (sdscmp(c->argv[1]->ptr,c->argv[2]->ptr) == 0) {

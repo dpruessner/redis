@@ -998,6 +998,12 @@ void punsubscribeCommand(redisClient *c);
 void publishCommand(redisClient *c);
 void watchCommand(redisClient *c);
 void unwatchCommand(redisClient *c);
+#ifdef AUTH_FEATURE
+int authCheckPath(redisClient *c, robj *key);
+int authCheckPathOrReply(redisClient *c, robj *key);
+int authCheckMod(redisClient *c);
+int authCheckModOrReply(redisClient *c);
+#endif
 
 #if defined(__GNUC__)
 void *calloc(size_t count, size_t size) __attribute__ ((deprecated));

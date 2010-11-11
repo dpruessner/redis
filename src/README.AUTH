@@ -1,117 +1,123 @@
+Status:
+  - INCOMPLETE     - auth feature not yet added to command (compiles!)
+  ? IMPLEMENTED    - command modified, thought to work
+  u UNITTEST       - unit test case written
+  * COMPLETE       - unit test case passed in the affirmative and negative
+
 COMMAND              STATUS
 --------------------------------------------------------------------------------
-append               INCOMPLETE                               
-auth                 INCOMPLETE                             
-bgrewriteaof         INCOMPLETE                                     
-bgsave               INCOMPLETE                               
-blpop                INCOMPLETE                              
-brpop                INCOMPLETE                              
-config               INCOMPLETE                               
-dbsize               INCOMPLETE                               
-debug                INCOMPLETE                              
-decr                 INCOMPLETE                             
-decrby               INCOMPLETE                               
-del                  INCOMPLETE                            
-discard              INCOMPLETE                                
-echo                 INCOMPLETE                             
-exec                 INCOMPLETE                             
-exists               INCOMPLETE                               
-expire               INCOMPLETE                               
-expireat             INCOMPLETE                                 
-flushall             INCOMPLETE                                 
-flushdb              INCOMPLETE                                
-get                  COMPLETE                            
-getset               COMPLETE                               
-hdel                 INCOMPLETE                             
-hexists              INCOMPLETE                                
-hget                 INCOMPLETE                             
-hgetall              INCOMPLETE                                
-hincrby              INCOMPLETE                                
-hkeys                INCOMPLETE                              
-hlen                 INCOMPLETE                             
-hmget                INCOMPLETE                              
-hmset                INCOMPLETE                              
-hset                 INCOMPLETE                             
-hsetnx               INCOMPLETE                               
-hvals                INCOMPLETE                              
-incr                 INCOMPLETE                             
-incrby               INCOMPLETE                               
-info                 INCOMPLETE                             
-keys                 INCOMPLETE                             
-lastsave             INCOMPLETE                                 
-lindex               INCOMPLETE                               
-linsert              INCOMPLETE                                
-llen                 INCOMPLETE                             
-lpop                 INCOMPLETE                             
-lpush                INCOMPLETE                              
-lpushx               INCOMPLETE                               
-lrange               INCOMPLETE                               
-lrem                 INCOMPLETE                             
-lset                 INCOMPLETE                             
-ltrim                INCOMPLETE                              
-mget                 INCOMPLETE                             
-monitor              INCOMPLETE                                
-move                 INCOMPLETE                             
-mset                 INCOMPLETE                             
-msetnx               INCOMPLETE                               
-multi                INCOMPLETE                              
-persist              INCOMPLETE                                
-ping                 INCOMPLETE                             
-psubscribe           INCOMPLETE                                   
-publish              INCOMPLETE                                
-punsubscribe         INCOMPLETE                                     
-randomkey            INCOMPLETE                                  
-rename               INCOMPLETE                               
-renamenx             INCOMPLETE                                 
-rpop                 INCOMPLETE                             
-rpoplpush            INCOMPLETE                                  
-rpush                INCOMPLETE                              
-rpushx               INCOMPLETE                               
-sadd                 INCOMPLETE                             
-save                 INCOMPLETE                             
-scard                INCOMPLETE                              
-sdiff                INCOMPLETE                              
-sdiffstore           INCOMPLETE                                   
-select               INCOMPLETE                               
-set                  COMPLETE                            
-setex                INCOMPLETE                              
-setnx                INCOMPLETE                              
-shutdown             INCOMPLETE                                 
-sinter               INCOMPLETE                               
-sinterstore          INCOMPLETE                                    
-sismember            INCOMPLETE                                  
-slaveof              INCOMPLETE                                
-smembers             INCOMPLETE                                 
-smove                INCOMPLETE                              
-sort                 INCOMPLETE                             
-spop                 INCOMPLETE                             
-srandmember          INCOMPLETE                                    
-srem                 INCOMPLETE                             
-strlen               INCOMPLETE                               
-subscribe            INCOMPLETE                                  
-substr               INCOMPLETE                               
-sunion               INCOMPLETE                               
-sunionstore          INCOMPLETE                                    
-sync                 INCOMPLETE                             
-ttl                  INCOMPLETE                            
-type                 INCOMPLETE                             
-unsubscribe          INCOMPLETE                                    
-unwatch              INCOMPLETE                                
-watch                INCOMPLETE                              
-zadd                 INCOMPLETE                             
-zcard                INCOMPLETE                              
-zcount               INCOMPLETE                               
-zincrby              INCOMPLETE                                
-zinterstore          INCOMPLETE                                    
-zrange               INCOMPLETE                               
-zrangebyscore        INCOMPLETE                                      
-zrank                INCOMPLETE                              
-zrem                 INCOMPLETE                             
-zremrangebyrank      INCOMPLETE                                        
-zremrangebyscore     INCOMPLETE                                         
-zrevrange            INCOMPLETE                                  
-zrevrangebyscore     INCOMPLETE                                         
-zrevrank             INCOMPLETE                                 
-zscore               INCOMPLETE                               
-zunionstore          INCOMPLETE                                    
-                     INCOMPLETE                         
+append               - INCOMPLETE                               
+auth                 ? implemented 
+bgrewriteaof         - INCOMPLETE                                     
+bgsave               - INCOMPLETE                               
+blpop                - INCOMPLETE                              
+brpop                - INCOMPLETE                              
+config               - INCOMPLETE                               
+dbsize               - INCOMPLETE                               
+debug                - INCOMPLETE                              
+decr                 ? implemented
+decrby               ? implemented
+del                  - INCOMPLETE                            
+discard              - INCOMPLETE                                
+echo                 - INCOMPLETE                             
+exec                 - INCOMPLETE                             
+exists               - INCOMPLETE                               
+expire               - INCOMPLETE                               
+expireat             - INCOMPLETE                                 
+flushall             - INCOMPLETE                                 
+flushdb              - INCOMPLETE                                
+get                  ? implemented
+getset               ? implemented
+hdel                 - INCOMPLETE                             
+hexists              - INCOMPLETE                                
+hget                 - INCOMPLETE                             
+hgetall              - INCOMPLETE                                
+hincrby              - INCOMPLETE                                
+hkeys                - INCOMPLETE                              
+hlen                 - INCOMPLETE                             
+hmget                - INCOMPLETE                              
+hmset                - INCOMPLETE                              
+hset                 - INCOMPLETE                             
+hsetnx               - INCOMPLETE                               
+hvals                - INCOMPLETE                              
+incr                 ? implemented
+incrby               ? implemented
+info                 - INCOMPLETE                             
+keys                 ? implemented
+lastsave             - INCOMPLETE                                 
+lindex               - INCOMPLETE                               
+linsert              - INCOMPLETE                                
+llen                 - INCOMPLETE                             
+lpop                 - INCOMPLETE                             
+lpush                - INCOMPLETE                              
+lpushx               - INCOMPLETE                               
+lrange               - INCOMPLETE                               
+lrem                 - INCOMPLETE                             
+lset                 - INCOMPLETE                             
+ltrim                - INCOMPLETE                              
+mget                 - INCOMPLETE                             
+monitor              - INCOMPLETE                                
+move                 - INCOMPLETE                             
+mset                 - INCOMPLETE                             
+msetnx               - INCOMPLETE                               
+multi                - INCOMPLETE                              
+persist              - INCOMPLETE                                
+ping                 - INCOMPLETE                             
+psubscribe           - INCOMPLETE                                   
+publish              - INCOMPLETE                                
+punsubscribe         - INCOMPLETE                                     
+randomkey            - INCOMPLETE                                  
+rename               - INCOMPLETE                               
+renamenx             - INCOMPLETE                                 
+rpop                 - INCOMPLETE                             
+rpoplpush            - INCOMPLETE                                  
+rpush                - INCOMPLETE                              
+rpushx               - INCOMPLETE                               
+sadd                 - INCOMPLETE                             
+save                 - INCOMPLETE                             
+scard                - INCOMPLETE                              
+sdiff                - INCOMPLETE                              
+sdiffstore           - INCOMPLETE                                   
+select               - INCOMPLETE                               
+set                  ? implemented
+setex                - INCOMPLETE                              
+setnx                - INCOMPLETE                              
+shutdown             - INCOMPLETE                                 
+sinter               - INCOMPLETE                               
+sinterstore          - INCOMPLETE                                    
+sismember            - INCOMPLETE                                  
+slaveof              - INCOMPLETE                                
+smembers             - INCOMPLETE                                 
+smove                - INCOMPLETE                              
+sort                 - INCOMPLETE                             
+spop                 - INCOMPLETE                             
+srandmember          - INCOMPLETE                                    
+srem                 - INCOMPLETE                             
+strlen               - INCOMPLETE                               
+subscribe            - INCOMPLETE                                  
+substr               - INCOMPLETE                               
+sunion               - INCOMPLETE                               
+sunionstore          - INCOMPLETE                                    
+sync                 - INCOMPLETE                             
+ttl                  - INCOMPLETE                            
+type                 ? implemented
+unsubscribe          - INCOMPLETE                                    
+unwatch              - INCOMPLETE                                
+watch                - INCOMPLETE                              
+zadd                 - INCOMPLETE                             
+zcard                - INCOMPLETE                              
+zcount               - INCOMPLETE                               
+zincrby              - INCOMPLETE                                
+zinterstore          - INCOMPLETE                                    
+zrange               - INCOMPLETE                               
+zrangebyscore        - INCOMPLETE                                      
+zrank                - INCOMPLETE                              
+zrem                 - INCOMPLETE                             
+zremrangebyrank      - INCOMPLETE                                        
+zremrangebyscore     - INCOMPLETE                                         
+zrevrange            - INCOMPLETE                                  
+zrevrangebyscore     - INCOMPLETE                                         
+zrevrank             - INCOMPLETE                                 
+zscore               - INCOMPLETE                               
+zunionstore          - INCOMPLETE                                    
+
